@@ -112,3 +112,7 @@ mjkey.txt
 .idea
 
 .pytest_cache/
+
+# foresight
+MUJOCO_LOG.TXT
+tags
