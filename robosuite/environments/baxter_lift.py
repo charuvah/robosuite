@@ -10,6 +10,8 @@ from robosuite.models.robots import Baxter
 from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
 
+import time
+
 class BaxterLift(BaxterEnv):
     """
     This class corresponds to the bimanual lifting task for the Baxter robot.
@@ -228,20 +230,11 @@ class BaxterLift(BaxterEnv):
             depth: requires @self.use_camera_obs and @self.camera_depth to be True.
                 contains a rendered depth map from the simulation
         """
-        di = super()._get_observation()
-        # camera observations
-        if self.use_camera_obs:
-            camera_obs = self.sim.render(
-                camera_name=self.camera_name,
-                width=self.camera_width,
-                height=self.camera_height,
-                depth=self.camera_depth,
-            )
-            if self.camera_depth:
-                di["image"], di["depth"] = camera_obs
-            else:
-                di["image"] = camera_obs
+        
+        t1 = time.monotonic()
 
+        di = super()._get_observation()
+        
         # low-level object information
         if self.use_object_obs:
             # position and rotation of object
@@ -271,6 +264,26 @@ class BaxterLift(BaxterEnv):
                     di["r_gripper_to_handle"],
                 ]
             )
+
+        t2 = time.monotonic()
+
+        # camera observations
+        if self.use_camera_obs:
+            camera_obs = self.sim.render(
+                camera_name=self.camera_name,
+                width=self.camera_width,
+                height=self.camera_height,
+                depth=self.camera_depth,
+            )
+            if self.camera_depth:
+                di["image"], di["depth"] = camera_obs
+            else:
+                di["image"] = camera_obs
+
+
+        t3 = time.monotonic()
+
+        print("ForesightDebugProfile,Camera,{},Object,{},Total,{}".format(t3-t2, t2-t1, t3-t1))
 
         return di
 
