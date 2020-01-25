@@ -11,6 +11,7 @@ from robosuite.models.tasks import TableTopTask, UniformRandomSampler
 
 
 import time
+from foresight.memoize import SurrealMemoizer
 
 class BaxterLift(BaxterEnv):
     """
@@ -269,12 +270,13 @@ class BaxterLift(BaxterEnv):
 
         # camera observations
         if self.use_camera_obs:
-            camera_obs = self.sim.render(
+            memoizer = SurrealMemoizer('/tmp/foresight')
+            camera_obs = memoizer.apply(di['object-state'], self.sim.render, dict(
                 camera_name=self.camera_name,
                 width=self.camera_width,
                 height=self.camera_height,
                 depth=self.camera_depth,
-            )
+            ))
             if self.camera_depth:
                 di["image"], di["depth"] = camera_obs
             else:
